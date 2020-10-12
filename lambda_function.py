@@ -9,6 +9,7 @@ def lambda_handler(event, context):
 
     # todo explore costs
     # todo
+    send_slack_message("tst python message")
     # todo
     from datetime import datetime, timedelta
     now_date = datetime.now()
@@ -35,7 +36,7 @@ def lambda_handler(event, context):
 
 
 def send_slack_message(message):
-    slack_url = "https://hooks.slack.com/services/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"
+    slack_url = "https://hooks.slack.com/services/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"
 
     message_text = f"{message} <@UJBAP0YJJ>"
 
