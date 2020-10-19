@@ -23,9 +23,9 @@ class TestLambdaHandler(TestCase):
         s3_for_check = json.loads(read_s3_file())
         print(len(s3_for_check))
 
-        need_lenght = 3
-        if len(s3_for_check) < need_lenght:
-            read_last_100(need_lenght)
+        need_length = 3
+        if len(s3_for_check) < need_length:
+            read_last_100(need_length, 100)
 
         for i in range(random_int):
             self.assertTrue(list_responses[i]['ResponseMetadata']['id'] == s3_for_check[i]['ResponseMetadata']['id'])
