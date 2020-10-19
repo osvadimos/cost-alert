@@ -8,8 +8,17 @@ import requests
 
 
 def read_s3_file():
-    s3 = boto3.resource('s3')
-    s3_client = boto3.client('s3')
+    session = boto3.Session(
+        aws_access_key_id=os.environ['ACCESS'],
+        aws_secret_access_key=os.environ['SECRET']
+    )
+    s3 = session.resource('s3')
+    s3_client = boto3.client(
+        's3',
+        aws_access_key_id=os.environ['ACCESS'],
+        aws_secret_access_key=os.environ['SECRET'],
+        region_name=os.environ['REGION_NAME']
+    )
     s3_key = os.environ['S3_KEY']
     s3_bucket = os.environ['S3_BUCKET']
     print(s3_key)
@@ -35,7 +44,12 @@ def key_exists(s3_client, mykey, mybucket):
 
 
 def read_last_100(prev_responses, need_length):
-    client = boto3.client('ce')
+    client = boto3.client(
+        'ce',
+        aws_access_key_id=os.environ['ACCESS'],
+        aws_secret_access_key=os.environ['SECRET'],
+        region_name=os.environ['REGION_NAME']
+    )
 
     now_date = datetime.now()
     now_date_string = now_date.strftime("%Y-%m-%d")  # TODAY
@@ -156,7 +170,11 @@ def send_slack_message(message, msg_type):
 
 
 def upload_response_list_to_s3(response_list: list):
-    s3 = boto3.resource('s3')
+    session = boto3.Session(
+        aws_access_key_id=os.environ['ACCESS'],
+        aws_secret_access_key=os.environ['SECRET']
+    )
+    s3 = session.resource('s3')
     s3_key = os.environ['S3_KEY']
     s3_bucket = os.environ['S3_BUCKET']
     obj = s3.Object(s3_bucket, s3_key)
