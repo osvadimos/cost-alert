@@ -36,11 +36,6 @@ class TestLambdaHandler(TestCase):
         print('list_of_prev100', list_of_prev_responses)
         self.assertEqual(100, len(read_last_100(list_of_prev_responses, need_length=100)))
 
-    def test_analyze_w_last_100(self):
-        last_100_list = self.generate_response_100()
-        json_response = self.single_response()
-        analyze_w_last100(last_100_list)
-
     @staticmethod
     def single_response():
         return {'ResultsByTime': [{'TimePeriod': {'Start': '2020-10-01', 'End': '2020-10-02'},
