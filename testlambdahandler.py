@@ -1,11 +1,11 @@
-from unittest import TestCase
-import boto3
-import random
 import json
-from lambda_function import upload_response_list_to_s3, read_s3_file, analyze_w_last100, download_last_100
+import random
+from unittest import TestCase
+
+from lambda_function import upload_response_list_to_s3, read_s3_file, analyze_w_last100, read_last_100
 
 
-class TestLambda_handler(TestCase):
+class TestLambdaHandler(TestCase):
 
     def test_upload_download_list_to_s3(self):
 
@@ -25,17 +25,16 @@ class TestLambda_handler(TestCase):
 
         need_lenght = 3
         if len(s3_for_check) < need_lenght:
-            download_last_100(need_lenght)
+            read_last_100(need_lenght)
 
         for i in range(random_int):
             self.assertTrue(list_responses[i]['ResponseMetadata']['id'] == s3_for_check[i]['ResponseMetadata']['id'])
         self.assertTrue(len(s3_for_check) == len(list_responses))
 
-    def test_download_last_100(self):
+    def test_read_last_100(self):
         list_of_prev_responses = self.generate_response_100()
         print('list_of_prev100', list_of_prev_responses)
-        new_response_example = self.single_response()
-        self.assertEqual(100, len(download_last_100(list_of_prev_responses, new_response_example, need_lenght=100)))
+        self.assertEqual(100, len(read_last_100(list_of_prev_responses, need_length=100)))
 
     def test_analyze_w_last_100(self):
         last_100_list = self.generate_response_100()
@@ -45,16 +44,16 @@ class TestLambda_handler(TestCase):
     @staticmethod
     def single_response():
         return {'ResultsByTime': [{'TimePeriod': {'Start': '2020-10-01', 'End': '2020-10-02'},
-                                                    'Total': {'NetAmortizedCost': {'Amount': '1000.00',
-                                                                                   'Unit': 'USD'}}, 'Groups': [],
-                                                    'Estimated': True}],
-                                 'ResponseMetadata': {'RequestId': '2885e189-2204-4911-aaac-1026b354f0cb',
-                                                      'HTTPStatusCode': 200, 'HTTPHeaders':
-                                                          {'date': 'Mon, 12 Oct 2020 18:41:44 GMT', 'content-type':
-                                                              'application/x-amz-json-1.1', 'content-length': '176',
-                                                           'connection': 'keep-alive', 'x-amzn-requestid':
-                                                               '2885e189-2204-4911-aaac-1026b354f0cb', 'cache-control':
-                                                               'no-cache'}, 'RetryAttempts': 0}}
+                                   'Total': {'NetAmortizedCost': {'Amount': '1000.00',
+                                                                  'Unit': 'USD'}}, 'Groups': [],
+                                   'Estimated': True}],
+                'ResponseMetadata': {'RequestId': '2885e189-2204-4911-aaac-1026b354f0cb',
+                                     'HTTPStatusCode': 200, 'HTTPHeaders':
+                                         {'date': 'Mon, 12 Oct 2020 18:41:44 GMT', 'content-type':
+                                             'application/x-amz-json-1.1', 'content-length': '176',
+                                          'connection': 'keep-alive', 'x-amzn-requestid':
+                                              '2885e189-2204-4911-aaac-1026b354f0cb', 'cache-control':
+                                              'no-cache'}, 'RetryAttempts': 0}}
 
     @staticmethod
     def generate_response():

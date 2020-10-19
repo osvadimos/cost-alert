@@ -10,21 +10,33 @@ def read_s3_file():
     s3 = boto3.resource('s3')
     s3_key = os.environ['S3_KEY']
     print(s3_key)
-    obj = s3.Object('immoviewer-ai-research', os.environ['S3_KEY'])
-    from_s3 = obj.get()['Body'].read().decode('utf-8')
-    print('downloaded file from s3')
-    print(from_s3)
-    print(type(from_s3))
-    return from_s3
+    obj = s3.Object('immoviewer-ai-research', s3_key)
+    if key_exists(s3, s3_key, 'immoviewer-ai-research'):
+        from_s3 = obj.get()['Body'].read().decode('utf-8')
+        print('downloaded file from s3')
+        print(from_s3)
+        print(type(from_s3))
+        return from_s3
+    else:
+        print(f"Could not find a file in s3.")
 
 
-def download_last_100(prev_responses, need_lenght):
+def key_exists(s3_client, mykey, mybucket):
+    response = s3_client.list_objects_v2(Bucket=mybucket, Prefix=mykey)
+    if response:
+        for obj in response['Contents']:
+            if mykey == obj['Key']:
+                return True
+    return False
+
+
+def read_last_100(prev_responses, need_length):
     client = boto3.client('ce')
 
     now_date = datetime.now()
     now_date_string = now_date.strftime("%Y-%m-%d")  # TODAY
 
-    if len(prev_responses) < need_lenght:  # by default should be == 100
+    if len(prev_responses) < need_length:  # by default should be == 100
 
         previous_date = now_date - 100 * timedelta(hours=24)
         previous_date_string = previous_date.strftime("%Y-%m-%d")
@@ -130,7 +142,13 @@ def upload_response_list_to_s3(response_list: list):
     print('uploaded new file to s3')
 
 
-file_from_s3 = read_s3_file()
-list_of_100 = download_last_100(file_from_s3, 100)
-analyzed_list_of_100 = analyze_w_last100(list_of_100)
-upload_response_list_to_s3(analyzed_list_of_100)
+def lambda_handler(event, context):
+    file_from_s3 = read_s3_file()
+    list_of_100 = read_last_100(file_from_s3, 100)
+    analyzed_list_of_100 = analyze_w_last100(list_of_100)
+    upload_response_list_to_s3(analyzed_list_of_100)
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Checking costs')
+    }
