@@ -9,9 +9,10 @@ import pandas as pd
 def read_s3_file():
     s3 = boto3.resource('s3')
     s3_key = os.environ['S3_KEY']
+    s3_bucket = os.environ['S3_BUCKET']
     print(s3_key)
-    obj = s3.Object('immoviewer-ai-research', s3_key)
-    if key_exists(s3, s3_key, 'immoviewer-ai-research'):
+    obj = s3.Object(s3_bucket, s3_key)
+    if key_exists(s3, s3_key, s3_bucket):
         from_s3 = obj.get()['Body'].read().decode('utf-8')
         print('downloaded file from s3')
         print(from_s3)
@@ -124,10 +125,10 @@ def analyze_w_last100(last_100_list):
 
 
 def send_slack_message(message):
-    # slack_url = 'https://hooks.slack.com/services/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'
-    slack_url = 'https://hooks.slack.com/services/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'  # alexkoz
+    slack_url = os.environ['SLACK_URL']
+    slack_id = os.environ['SLACK_ID']
 
-    message_text = f"{message} @Alex Kozlov"  # @ ID to all
+    message_text = message + ' <@' + slack_id + '>'
     data = {'text': message_text}
     requests.post(url=slack_url, data=json.dumps(data))
     print("Send message to slack")
