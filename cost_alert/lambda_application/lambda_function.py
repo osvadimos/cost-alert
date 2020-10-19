@@ -108,6 +108,7 @@ def analyze_w_last100(last_100_list):
     df_start.columns = ['start', 'amount']
     df_start = df_start.astype({'amount': 'float64'})
     last_response = df_start.loc[int(df_start.shape[0]) - 1]
+    last_response_month = str(df_start.iloc[int(df_start.shape[0] - 1)]['start'][0:-3])
 
     df_start_first_only = df_start[df_start['start'].str.endswith('01')].reset_index(drop=True)
     if df_start_first_only.shape[0] > 1:
@@ -122,29 +123,65 @@ def analyze_w_last100(last_100_list):
     last_response_amount = last_response['amount']
 
     if last_response['start'].endswith('01') is True:
-        if last_response_amount > avg_start_only * 1.1:
-            if last_response_amount > avg_start_only * 1.2:
-                send_slack_message(
-                    'Alarm! average begin month daily limit {} USD exceeded higher 20%, by {}%, now –– {} USD'.
-                        format(avg_start_only, round(float((last_response_amount / avg_start_only) * 100 - 100), 2),
-                               last_response_amount), 1)
-            else:
-                send_slack_message(
-                    'Warning! average begin month daily limit {} USD exceeded higher 10%, by {}%, now –– {} USD'.
-                        format(avg_start_only, round(float((last_response_amount / avg_start_only) * 100 - 100), 2),
-                               last_response_amount), 1)
+        if df_start_first_only.loc[int(df_start_first_only.shape[0] - 1)]['amount']:
+            # prev_start_only_amount = df_start_first_only[int(df_start_first_only.shape[0]-1)]['amount']
+            message = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + '\nNew get_cost request.' + \
+                      '\n\nYesterday ' + str(df_start_first_only.loc[int(df_start_first_only.shape[0] - 1)]['start']) + \
+                      ' spent: {:>20}'.format(
+                          str(round(float(df_start_first_only.loc[int(df_start_first_only.shape[0] - 1)]['amount']),
+                                    2))) + \
+                      ' USD. (First day of the month)' + \
+                      '\n\n1st days of month: ' + \
+                      str(df_start_first_only.loc[int(df_start_first_only.shape[0] - 2)]['start']) + '. Spent: ' + \
+                      str(round(float(df_start_first_only.loc[int(df_start_first_only.shape[0] - 2)]['amount']), 2)) + \
+                      '\nMean for this month {}: {:>15}'.format(last_response_month,
+                                                                round(float(df_start[df_start['start'].str.contains(str(
+                                                                    df_start.iloc[int(df_start.shape[0]) - 1]['start'][
+                                                                    0:-3]))].mean()), 2)) + ' USD' + \
+                      '\nMean for prev 1st days of months: ' + str(round(float(avg_start_only), 2))
+            send_slack_message(message, 0)
+            if last_response_amount > avg_start_only * 1.1:
+                if last_response_amount > avg_start_only * 1.2:
+                    send_slack_message(
+                        'Alarm! average begin month daily limit {} USD exceeded higher 20%, by {}%, now –– {} USD'.
+                            format(avg_start_only, round(float((last_response_amount / avg_start_only) * 100 - 100), 2),
+                                   last_response_amount), 1)
+                else:
+                    send_slack_message(
+                        'Warning! average begin month daily limit {} USD exceeded higher 10%, by {}%, now –– {} USD'.
+                            format(avg_start_only, round(float((last_response_amount / avg_start_only) * 100 - 100), 2),
+                                   last_response_amount), 1)
     else:
-        if last_response_amount > avg_not_start * 1.1:
-            if last_response_amount > avg_not_start * 1.2:
-                send_slack_message('Alarm! average daly limit {} USD exceeded by {}%, now –– {} USD'.
-                                   format(avg_not_start,
-                                          round(float((last_response_amount / avg_not_start) * 100 - 100), 2),
-                                          last_response_amount), 1)
-            else:
-                send_slack_message('Warning! average daily limit {} USD exceeded by {}%, now –– {} USD'.
-                                   format(avg_not_start,
-                                          round(float((last_response_amount / avg_not_start) * 100 - 100), 2),
-                                          last_response_amount), 1)
+        if df_not_first.loc[int(df_not_first.shape[0] - 1)]['amount']:
+            message = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + '\nNew get_cost request.' + \
+                      '\n\nYesterday ' + str(df_not_first.loc[int(df_not_first.shape[0] - 1)]['start']) + \
+                      ' spent: {:>20}'.format(
+                          str(round(float(df_not_first.loc[int(df_not_first.shape[0] - 1)]['amount']), 2))) + \
+                      ' USD. (Not first day of the month)' + \
+                      '\nDay before yesterday: ' + str(df_not_first.loc[int(df_not_first.shape[0] - 2)]['start']) + \
+                      ' spent: {:>16}'.format(
+                          str(round(float(df_not_first.loc[int(df_not_first.shape[0] - 2)]['amount']), 2))) + \
+                      ' USD' + \
+                      '\nMean for this month {}: {:>15}'.format(last_response_month,
+                                                                round(float(df_start[df_start['start'].str.contains(str(
+                                                                    df_start.iloc[int(df_start.shape[0]) - 1]['start'][
+                                                                    0:-3]))].mean()), 2)) + ' USD' + \
+                      '\nMean for prev 100 days (not first days of the month): ' \
+                      '{:>5}'.format(str(round(float(avg_not_start), 2))) + ' USD' + \
+                      '\nMean for prev 1st days of months: ' \
+                      '{:>8}'.format(str(round(float(avg_start_only), 2))) + ' USD'
+            send_slack_message(message, 0)
+            if last_response_amount > avg_not_start * 1.1:
+                if last_response_amount > avg_not_start * 1.2:
+                    send_slack_message('Alarm! average daly limit {} USD exceeded by {}%, now –– {} USD'.
+                                       format(avg_not_start,
+                                              round(float((last_response_amount / avg_not_start) * 100 - 100), 2),
+                                              last_response_amount), 1)
+                else:
+                    send_slack_message('Warning! average daily limit {} USD exceeded by {}%, now –– {} USD'.
+                                       format(avg_not_start,
+                                              round(float((last_response_amount / avg_not_start) * 100 - 100), 2),
+                                              last_response_amount), 1)
     return last_100_list
 
 
@@ -185,7 +222,7 @@ def upload_response_list_to_s3(response_list: list):
 
 
 def lambda_handler(event, context):
-    send_slack_message(message='New get_cost request', msg_type=0)
+    # send_slack_message(message='New get_cost request', msg_type=0)
     file_from_s3 = read_s3_file()
     list_of_100 = read_last_100(file_from_s3, 100)
     analyzed_list_of_100 = analyze_w_last100(list_of_100)
@@ -195,3 +232,4 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': json.dumps('Checking costs')
     }
+
