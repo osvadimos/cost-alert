@@ -2,7 +2,7 @@
 
 This project contains source code and supporting files for a serverless application that you can deploy with the SAM CLI. It includes the following files and folders.
 
-- lamda_applicaton - Code for the application's Lambda function.
+- lambda_applicaton - Code for the application's Lambda function.
 - events - Invocation events that you can use to invoke the function.
 - tests - Unit tests for the application code. 
 - template.yaml - A template that defines the application's AWS resources.
@@ -94,6 +94,23 @@ cost-alert$ sam logs -n CostAlertFunction --stack-name cost-alert --tail
 ```
 
 You can find more information and examples about filtering Lambda function logs in the [SAM CLI Documentation](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-logging.html).
+
+## Lambda function parameters
+Environment variables:
+
+```S3_BUCKET```  – Name of your S3 bucket. S3://your-bucket-name/
+
+```S3_KEY``` – Path to the result file. /some-folder-in-bucket/result.json
+
+```SLACK_URL``` – Your Slack App Incoming Webhook URL
+
+```SLACK_ID``` – Slack personal ID if you want to use a mention
+
+```GMAIL_USER``` – Your Gmail login. your-login@example.com (Allow insecure app to access your account)
+
+```GMAIL_PASSW``` – Password from your Gmail account
+
+```GMAIL_TO``` – Receiver email address
 
 ## Unit tests
 
