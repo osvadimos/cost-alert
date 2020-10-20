@@ -145,7 +145,7 @@ def analyze_w_last100(last_100_list):
             at_moment_time = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             len_last_100_first = int(df_start_first_only.shape[0])
 
-            message = f"{at_moment_time} \nNew S3 spends request. \n\nYesterday {today_date} spent: {today_spent}" \
+            message = f"{at_moment_time} \nNew Expenses request. \n\nYesterday {today_date} spent: {today_spent}" \
                 f" USD. (First day of the month) \nIn previous 1st days of month: {prev_date}. Spent: {prev_spent} USD" \
                 f"\nMean for this month {last_response_month}: {month_mean} USD" \
                 f"\nMean for {len_last_100_first} prev 1st days of months: {mean_prev_first} USD."
@@ -179,7 +179,7 @@ def analyze_w_last100(last_100_list):
             len_last_100_without_first = int(df_not_first.shape[0])
             len_last_100_first = int(df_start_first_only.shape[0])
 
-            message = f"{at_moment_time} \nNew S3 spends request. \n\nToday {today_date} spent: {today_spent}" \
+            message = f"{at_moment_time} \nNew S3 const explorer request. \n\nToday {today_date} spent: {today_spent}" \
                 f" USD. (Not first day of the month) \nYesterday: {prev_date}. Spent: {prev_spent} USD" \
                 f"\nMean for this month {last_response_month}: {month_mean} USD" \
                 f"\nMean for prev {len_last_100_without_first} days (not first days of the month): {mean_not_first} USD" \
