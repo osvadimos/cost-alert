@@ -141,8 +141,7 @@ def analyze_w_last100(last_100_list):
                                     2))
             prev_date = str(df_start_first_only.loc[int(df_start_first_only.shape[0] - 2)]['start'])
             prev_spent = str(round(float(df_start_first_only.loc[int(df_start_first_only.shape[0] - 2)]['amount']), 2))
-            month_mean = round(float(df_start[df_start['start'].str.contains(str(
-                df_start.iloc[int(df_start.shape[0]) - 1]['start'][0:-3]))].mean()), 2)
+
             month_sum = round(float(df_start[df_start['start'].str.contains(str(
                 df_start.iloc[int(df_start.shape[0]) - 1]['start'][0:-3]))]['amount'].sum()), 2)
             if df_start[df_start['start'].str.contains(last_response_prev_month)].empty is False:
@@ -156,24 +155,23 @@ def analyze_w_last100(last_100_list):
             len_last_100_first = int(df_start_first_only.shape[0])
 
             message = f"{at_moment_time} \nNew Expenses request. \n\nYesterday {today_date} spent: {today_spent}" \
-                f" USD. (First day of the month) \nIn previous 1st days of month: {prev_date}. Spent: {prev_spent} USD" \
-                f"\nMean for this month {last_response_month}: {month_mean} USD" \
-                f"\nSum for this month {last_response_month}: {month_sum} USD" \
-                f"\nSum for previous month {last_response_prev_month}: {prev_month_sum} USD" \
-                f"\nMean for {len_last_100_first} prev 1st days of months: {mean_prev_first} USD."
+                      f" USD. (First day of the month) \nIn previous 1st days of month: {prev_date}. Spent: {prev_spent} USD" \
+                      f"\nSum for this month {last_response_month}: {month_sum} USD" \
+                      f"\nSum for previous month {last_response_prev_month}: {prev_month_sum} USD" \
+                      f"\nMean for {len_last_100_first} prev 1st days of months: {mean_prev_first} USD."
             send_slack_message(message, 0)
             send_email_message(message)
             if last_response_amount > avg_start_only * 1.1:
                 if last_response_amount > avg_start_only * 1.2:
                     exceed_percent = round(float((last_response_amount / avg_start_only) * 100 - 100), 2)
                     alarm_message = message + f"\n\nAlarm! average begin month daily limit {avg_start_only} USD " \
-                        f"exceeded higher 20%, by {exceed_percent}%, now –– {last_response_amount} USD."
+                                              f"exceeded higher 20%, by {exceed_percent}%, now –– {last_response_amount} USD."
                     send_slack_message(alarm_message, 1)
                     send_email_message(alarm_message)
                 else:
                     exceed_percent = round(float((last_response_amount / avg_start_only) * 100 - 100), 2)
                     warning_message = message + f"\n\nWarning! average begin month daily limit {avg_start_only} USD " \
-                        f"exceeded higher 10%, by {exceed_percent}%, now –– {last_response_amount} USD."
+                                                f"exceeded higher 10%, by {exceed_percent}%, now –– {last_response_amount} USD."
                     send_slack_message(warning_message, 1)
                     send_email_message(warning_message)
     else:
@@ -183,8 +181,6 @@ def analyze_w_last100(last_100_list):
                                     2))
             prev_date = str(df_not_first.loc[int(df_not_first.shape[0] - 2)]['start'])
             prev_spent = str(round(float(df_not_first.loc[int(df_not_first.shape[0] - 2)]['amount']), 2))
-            month_mean = round(float(df_start[df_start['start'].str.contains(
-                str(df_start.iloc[int(df_start.shape[0]) - 1]['start'][0:-3]))].mean()), 2)
             month_sum = round(float(df_start[df_start['start'].str.contains(str(
                 df_start.iloc[int(df_start.shape[0]) - 1]['start'][0:-3]))]['amount'].sum()), 2)
             if df_start[df_start['start'].str.contains(last_response_prev_month)].empty is False:
@@ -198,9 +194,8 @@ def analyze_w_last100(last_100_list):
             len_last_100_without_first = int(df_not_first.shape[0])
             len_last_100_first = int(df_start_first_only.shape[0])
 
-            message = f"{at_moment_time} \nNew S3 const explorer request. \n\nToday {today_date} spent: {today_spent}" \
+            message = f"{at_moment_time} \nNew Cost explorer request. \n\nToday {today_date} spent: {today_spent}" \
                 f" USD. (Not first day of the month) \nYesterday: {prev_date}. Spent: {prev_spent} USD" \
-                f"\nMean for this month {last_response_month}: {month_mean} USD" \
                 f"\nSum for this month {last_response_month}: {month_sum} USD" \
                 f"\nSum for previous month {last_response_prev_month}: {prev_month_sum} USD" \
                 f"\nMean for prev {len_last_100_without_first} days (not first days of the month): {mean_not_first} USD" \
@@ -211,13 +206,13 @@ def analyze_w_last100(last_100_list):
                 if last_response_amount > avg_not_start * 1.2:
                     exceed_percent = round(float((last_response_amount / avg_not_start) * 100 - 100), 2)
                     alarm_message = message + f"\n\nAlarm! average daily limit {avg_not_start} USD exceeded by " \
-                        f"{exceed_percent}%, now –– {last_response_amount} USD."
+                                              f"{exceed_percent}%, now –– {last_response_amount} USD."
                     send_slack_message(alarm_message, 1)
                     send_email_message(alarm_message)
                 else:
                     exceed_percent = round(float((last_response_amount / avg_not_start) * 100 - 100), 2)
                     warning_message = message + f"\n\nWarning! average daily limit {avg_not_start} USD exceeded by " \
-                        f"{exceed_percent}%, now –– {last_response_amount} USD."
+                                                f"{exceed_percent}%, now –– {last_response_amount} USD."
                     send_slack_message(warning_message, 1)
                     send_email_message(warning_message)
     return last_100_list
@@ -296,4 +291,3 @@ def lambda_handler(event, context):
         'statusCode': 200,
         'body': json.dumps('Checking costs')
     }
-
