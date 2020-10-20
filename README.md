@@ -1,12 +1,12 @@
 # AWS cost alert module
 
-This code checks the AWS S3 account spends and sends a notification in the Slack if the threshold is exceeded.
+The application checks the AWS account expenses and sends a notification in the Slack or email if the threshold exceeded.
 
 >By default, it calculates mean of spends for 100 previous days with daily granularity and sends a notification if on the day of request spends 10%/20% more.
 
-Spends of 01-02 days of each month are collected and counts separately because of AWS S3 Month Spends Recalculations happens in these days.
+Costs of 01st 02nd days of each month are getting collected and counted separately because of AWS S3 Month Spends Recalculations happens in these days.
 
-Data keeps in ```result``` JSON file in your bucket, where each value is a part of a single request.
+Data kept in ```result``` JSON file in your bucket, where each value is a part of a single day request.
 
 ### Parameters
 Environment variables:
@@ -16,3 +16,14 @@ Environment variables:
 'SLACK_URL' # – your Slack App Incoming Webhook URL
 'SLACK_ID' # – Slack personal ID if you want to use a mention
 ```
+
+In order to deploy you have to complete next steps:
+* Install sam cli for aws lambda
+https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html
+* Build a package with dependencies.
+```
+cd cost_alert
+sam  build && sam package --s3-bucket your-s3-bucket
+```
+* Upload your lambda onto AWS
+* Set up cloudwatch cron alarm and hook it to the current lambda function 
