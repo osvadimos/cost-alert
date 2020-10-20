@@ -3,6 +3,7 @@ import os
 from datetime import datetime, timedelta
 
 import boto3
+import dateutil
 import pandas as pd
 import requests
 import smtplib
@@ -26,7 +27,7 @@ def read_s3_file():
     obj = s3.Object(s3_bucket, s3_key)
     if key_exists(s3_client, s3_key, s3_bucket):
         from_s3 = obj.get()['Body'].read().decode('utf-8')
-        print('downloaded file from s3')
+        print('Downloaded file from s3')
         return from_s3
     else:
         print(f"Could not find a file in S3.")
@@ -122,6 +123,8 @@ def analyze_w_last100(last_100_list):
     df_start = df_start.astype({'amount': 'float64'})
     last_response = df_start.loc[int(df_start.shape[0]) - 1]
     last_response_month = str(df_start.iloc[int(df_start.shape[0] - 1)]['start'][0:-3])
+    last_response_prev_month = str(datetime.strptime(last_response_month, "%Y-%m") - \
+                                   dateutil.relativedelta.relativedelta(months=1))[:7]
 
     df_start_first_only = df_start[df_start['start'].str.endswith('01')].reset_index(drop=True)
     avg_start_only = df_start_first_only.iloc[:-1]['amount'].mean()
@@ -139,8 +142,15 @@ def analyze_w_last100(last_100_list):
             prev_date = str(df_start_first_only.loc[int(df_start_first_only.shape[0] - 2)]['start'])
             prev_spent = str(round(float(df_start_first_only.loc[int(df_start_first_only.shape[0] - 2)]['amount']), 2))
             month_mean = round(float(df_start[df_start['start'].str.contains(str(
-                df_start.iloc[int(df_start.shape[0]) - 1]['start'][
-                0:-3]))].mean()), 2)
+                df_start.iloc[int(df_start.shape[0]) - 1]['start'][0:-3]))].mean()), 2)
+            month_sum = round(float(df_start[df_start['start'].str.contains(str(
+                df_start.iloc[int(df_start.shape[0]) - 1]['start'][0:-3]))]['amount'].sum()), 2)
+            if df_start[df_start['start'].str.contains(last_response_prev_month)].empty is False:
+                prev_month_sum = round(
+                    float(df_start[df_start['start'].str.contains(last_response_prev_month)]['amount'].sum()), 2)
+            else:
+                prev_month_sum = 'No values'
+
             mean_prev_first = str(round(float(avg_start_only), 2))
             at_moment_time = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
             len_last_100_first = int(df_start_first_only.shape[0])
@@ -148,6 +158,8 @@ def analyze_w_last100(last_100_list):
             message = f"{at_moment_time} \nNew S3 spends request. \n\nYesterday {today_date} spent: {today_spent}" \
                 f" USD. (First day of the month) \nIn previous 1st days of month: {prev_date}. Spent: {prev_spent} USD" \
                 f"\nMean for this month {last_response_month}: {month_mean} USD" \
+                f"\nSum for this month {last_response_month}: {month_sum} USD" \
+                f"\nSum for previous month {last_response_prev_month}: {prev_month_sum} USD" \
                 f"\nMean for {len_last_100_first} prev 1st days of months: {mean_prev_first} USD."
             send_slack_message(message, 0)
             send_email_message(message)
@@ -173,6 +185,13 @@ def analyze_w_last100(last_100_list):
             prev_spent = str(round(float(df_not_first.loc[int(df_not_first.shape[0] - 2)]['amount']), 2))
             month_mean = round(float(df_start[df_start['start'].str.contains(
                 str(df_start.iloc[int(df_start.shape[0]) - 1]['start'][0:-3]))].mean()), 2)
+            month_sum = round(float(df_start[df_start['start'].str.contains(str(
+                df_start.iloc[int(df_start.shape[0]) - 1]['start'][0:-3]))]['amount'].sum()), 2)
+            if df_start[df_start['start'].str.contains(last_response_prev_month)].empty is False:
+                prev_month_sum = round(
+                    float(df_start[df_start['start'].str.contains(last_response_prev_month)]['amount'].sum()), 2)
+            else:
+                prev_month_sum = 'No values'
             mean_prev_first = str(round(float(avg_start_only), 2))
             mean_not_first = str(round(float(avg_not_start), 2))
             at_moment_time = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
@@ -182,6 +201,8 @@ def analyze_w_last100(last_100_list):
             message = f"{at_moment_time} \nNew S3 spends request. \n\nToday {today_date} spent: {today_spent}" \
                 f" USD. (Not first day of the month) \nYesterday: {prev_date}. Spent: {prev_spent} USD" \
                 f"\nMean for this month {last_response_month}: {month_mean} USD" \
+                f"\nSum for this month {last_response_month}: {month_sum} USD" \
+                f"\nSum for previous month {last_response_prev_month}: {prev_month_sum} USD" \
                 f"\nMean for prev {len_last_100_without_first} days (not first days of the month): {mean_not_first} USD" \
                 f"\nMean for prev {len_last_100_first} 1st days of months: {mean_prev_first} USD"
             send_slack_message(message, 0)
