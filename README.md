@@ -2,9 +2,9 @@
 
 The application checks the AWS account expenses and sends a notification in the Slack or email if the threshold exceeded.
 
->By default, it calculates mean of spends for 100 previous days with daily granularity and sends a notification if on the day of request spends 10%/20% more.
+>By default, it calculates mean of expenses for 100 previous days with daily granularity and sends a notification if on the day of request expenses 10%/20% more.
 
-Costs of 01st 02nd days of each month are getting collected and counted separately because of AWS S3 Month Spends Recalculations happens in these days.
+Costs of 01st 02nd days of each month are getting collected and counted separately because of AWS S3 Month Expenses Recalculations happens in these days.
 
 Data kept in ```result``` JSON file in your bucket, where each value is a part of a single day request.
 
